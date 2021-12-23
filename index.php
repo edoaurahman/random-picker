@@ -7,12 +7,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
-  <title>Random Name Picker</title>
+  <title>Undian Hadiah RPJ</title>
 
   <link rel="stylesheet" href="css/normalize.css" />
   <link rel="stylesheet" href="css/foundation.css" />
   <script src="js/vendor/custom.modernizr.js"></script>
   <script src="js/jquery-latest.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     #values {
@@ -54,9 +55,9 @@
       margin-top: -150px;
     }
 
-    body {
-      background: #F1C40F url(img/bg-noise-orange.png);
-    }
+    /* body {
+      background: #ffff url(img/bg.jpg) no-repeat center center fixed;
+    } */
 
     #varnote {
       font-size: 40px;
@@ -73,16 +74,20 @@
 
 </head>
 
-<body onload="reset();">
-
-  <div class="full-head" style="width:100%;background:#111 url(img/header-bg.png) repeat-x center top;border-bottom:1px solid #D35400;">
+<body onload="reset();" style="background: url(img/bg.jpg) no-repeat center center fixed; 
+  -webkit-background-size: contain;
+  -moz-background-size: contain;
+  -o-background-size: contain;
+  background-size: contain;">
+  <div style="margin: 20px;">
+    <center><strong style="font-size: 50px; color: #ffff;" id="demo"></strong></center>
+  </div>
+  <div class="full-head" >
     <div class="row">
-      <div class="large-12 columns" style="padding-top:50px;background:#111 url(img/header-bg.png) repeat-x center top;z-index:20;">
-        <ul class="button-group even-4">
-          <li><a href="index.php" class="alert button" id="reset">Reset</a></li>
-          <li><button class="button" id="list" onclick="namelist();">Name List</button></li>
-          <li><button class="button" id="save" onclick="save();">Save &amp; Update</button></li>
-          <li><button class="success button" id="go" onclick="go();">GO!</button></li>
+      <div class="large-12 columns" repeat-x center top;z-index:20;">
+        <ul class="button-group even-2">
+          <li><button class="button" id="list" onclick="namelist();">Daftar Nomor Undian</button></li>
+          <li><button class="success button" id="go" onclick="go();">Undi Sekarang</button></li>
         </ul>
       </div>
     </div>
@@ -90,11 +95,9 @@
 
   <div class="row">
     <div class="large-12 columns">
-      <h3 style="text-align:center;margin-top:30px;" id="headline">Let's see who is The Lucky One?</h3>
+      <h3 style="text-align:center;margin-top:30px;" id="headline">Saksikan siaran langsng undian My RPJ</h3>
 
-      <div id="varnote"><img src="img/logo.png">
-        <div class="copyright">&copy; Coded by <strong>Heiswayi Nrird</strong>, June 2013</div>
-      </div>
+      
 
       <div id="popdown">
         <div id="names" class="inbox"><textarea name="namesbox" id="namesbox"></textarea></div>
@@ -105,30 +108,54 @@
 
     </div>
   </div>
+  <?php
+  $tayang = $_GET['tayang'];
+  ?>
+  <script>
+    // Mengatur waktu akhir perhitungan mundur
+    var countDownDate = "<?= $tayang ?>";
+
+    // Memperbarui hitungan mundur setiap 1 detik
+    var x = setInterval(function() {
+
+      // Untuk mendapatkan tanggal dan waktu hari ini
+      var now = new Date().getTime();
+
+      // Temukan jarak antara sekarang dan tanggal hitung mundur
+      var distance = countDownDate - now;
+
+      // Perhitungan waktu untuk hari, jam, menit dan detik
+      var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      // Keluarkan hasil dalam elemen dengan id = "demo"
+      document.getElementById("demo").innerHTML = days + "d " + hours + "h " +
+        minutes + "m " + seconds + "s ";
+
+      // Jika hitungan mundur selesai, tulis beberapa teks 
+      if (distance < 0) {
+        clearInterval(x);
+        document.getElementById("demo").innerHTML = "Berlangsung";
+      }
+    }, 1000);
+  </script>
   <?php require('inc/config.php');
-  $sql = mysqli_query($conn, "SELECT * FROM nomer_undian");
+  $kupon_id = $_GET['kupon_id'];
+  // var_dump('1231');
+  // die;
+  $sql = mysqli_query($conn, "SELECT `Undian`.`id`, `Undian`.`kupon_id` AS `kuponId`, `Undian`.`customer_id` AS `customerId`, `Undian`.`undian_number` AS `undianNumber`, `Undian`.`createdAt`, `Undian`.`updatedAt`, `kupon`.`id` AS `kupon.id`, `kupon`.`nama` AS `kupon.nama`, `kupon`.`keterangan` AS `kupon.keterangan`, `kupon`.`kode` AS `kupon.kode`, `customer`.`id` AS `customer.id`, `customer`.`nama` AS `customer.nama` FROM `undians` AS `Undian` LEFT OUTER JOIN `kupons` AS `kupon` ON `Undian`.`kupon_id` = `kupon`.`id` LEFT OUTER JOIN `users` AS `customer` ON `Undian`.`customer_id` = `customer`.`id` where `Undian`.`kupon_id` = $kupon_id ORDER BY `Undian`.`id`");
   $nama = [];
-  // var_dump($sql);
   while ($data = mysqli_fetch_array($sql)) {
-    $nama[] = $data['nama'];
+    $nama[] = $data['undianNumber'];
   }
   ?>
 
 
   <script>
-    <?php
-    $sql = mysqli_query($conn, "SELECT * FROM nomer_undian");
-    $nama = [];
-    // var_dump($sql);
-    while ($data = mysqli_fetch_array($sql)) {
-      $nama[] = $data['nama'];
-    }
-    ?>
-
     var javaScriptVar = <?php echo json_encode($nama); ?>;
-    javaScriptVar.join('<br>');
-
-
+    console.log(javaScriptVar);
 
     document.write('<script src=' +
       ('__proto__' in {} ? 'js/vendor/zepto' : 'js/vendor/jquery') +
@@ -142,80 +169,6 @@
 
   <script>
     var text;
-    var names = new Array('Barbara McFell',
-      'Tempo McKeteketly',
-      'Maonga Irpaae',
-      'Jose Tunisia',
-      'Bob Bobson',
-      'Harold Greenoff',
-      'Jeff Penn',
-      'Ewan Freedom',
-      'Benjamin Turkin',
-      'Robert Harper',
-      'Sally Cladwell',
-      'Gregory Tomson',
-      'Benita Dano',
-      'Tameka Chea',
-      'Fernando Guntrum',
-      'Cody Devita',
-      'Margery Moloney',
-      'Jessie Wagar',
-      'Jessie Burkhard',
-      'Cody Lamotte',
-      'Tabatha Cantley',
-      'Hugh Fullwood',
-      'Emilia Janusz',
-      'Erik Taketa',
-      'Lenore Laughter',
-      'Kathrine Palazzo',
-      'Lonnie Garron',
-      'Tyrone Shott',
-      'Gay Duble',
-      'Pearlie Newberg',
-      'Clinton Rayl',
-      'Louisa Strey',
-      'Saundra Ingenito',
-      'Fernando Jenkin',
-      'Maricela Tonkin',
-      'Allie Borjas',
-      'Clinton Rickenbacker',
-      'Cody Golay',
-      'Jerri Tienda',
-      'Nita Pippen',
-      'Alejandra Bonhomme',
-      'Nelson Eguia',
-      'Rae Velasques',
-      'Boyce Edeker',
-      'Cedrick Culotti',
-      'Elenora Nagindas',
-      'Arletta Miran',
-      'Alica Knudsvig',
-      'Von Ostroot',
-      'Tomika Nuesca',
-      'Felton Pattinson',
-      'Cristopher Laper',
-      'Shonna Parrotta',
-      'Sarina Macurdy',
-      'Waylon Companie',
-      'Shon Carratura',
-      'Jae Kneser',
-      'Janett Papiernik',
-      'Lynwood Bellar',
-      'Jeramy Contopoulos',
-      'Hong Nederostek',
-      'Gigi Mccarn',
-      'Sid Mursko',
-      'Bielser',
-      'Jospeh Lustberg',
-      'Spring Luckinbill',
-      'Ciera Chionchio',
-      'Marleen Litchard',
-      'Eldridge Brynga',
-      'Leif Dinho',
-      'Gigi Kornblatt',
-      'Idell Chagollan',
-      'Michale Mcclod'
-    );
 
     function reset() {
       // re-enable go button
@@ -268,7 +221,7 @@
     function namelist() {
       $("#varnote").hide();
       $('#namesbox').removeAttr('disabled', 'disabled');
-      $('#headline').text('Configure name list');
+      $('#headline').text('Daftar Nomor Undian');
       $("#popdown").show();
       $("#values").hide();
       $("#names").show();
@@ -320,7 +273,7 @@
         } else {
           name = names[i];
           //console.log(name);
-          $('#values').append('<div id=result' + count + ' class=name>' + name + '</div>');
+          $('#values').append(`<div value=${name} id=result${count} class=name>${name}</div>`);
         }
         count = count + 1;
       }
@@ -350,7 +303,7 @@
     }
 
     function standout(text) {
-
+      console.log($("result1").val());
       $('#result1').removeClass('name');
       $('.name').animate({
         opacity: .25
@@ -358,7 +311,7 @@
       $('#result1').animate({
         height: '+=60px'
       });
-      $('#result1').append('<div class="extra"><a class="small alert button" href="#" onClick="removevictim();">Remove name from list</a></div>');
+      $('#result1').append('<div class="extra"><a class="small alert button" href="#" onClick="removevictim();">Konfirmasi Pemenang</a></div>');
       $('#go').removeAttr('disabled', 'disabled');
       $('#list').removeAttr('disabled', 'disabled');
       $('#save').removeAttr('disabled', 'disabled');
@@ -377,15 +330,44 @@
           nameupdated = nameupdated + "\n" + name;
         }
       }
-      $('#namesbox').val("");
-      $('#namesbox').val(nameupdated);
-      $('#result1').html("Removed");
-      $('#result1').fadeOut(1000, function() {
-        $("div").remove("#result1");
+      var cookieValue = document.getElementById('result1').getAttribute('value');
+      $.ajax({
+        type: "POST",
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        url: "http://localhost:3000/pemenang-undian",
+        data: '{"undianNumber":' + cookieValue + ',"kuponId":"<?= $kupon_id ?>"}',
+        success: function(Record) {
+          Swal.fire({
+            position: 'center',
+            icon: 'success',
+            title: 'Pemenang telah di konfirmasi',
+            showConfirmButton: false,
+            timer: 15000
+          })
+          console.log(Record);
+        },
+        Error: function(textMsg) {
+          console.log(textMsg);
+          Swal.fire({
+            position: 'center',
+            icon: 'success',
+            title: 'Pemenang telah di konfirmasi',
+            showConfirmButton: false,
+            timer: 15000
+          })
+        }
       });
-      $("div").remove(".name");
-      $("div").remove(".extra");
-      $('#headline').text('OK, done! Let\'s see who is next? Just click "GO!" button for next roll.');
+      console.log(cookieValue);
+      // $('#namesbox').val("");
+      // $('#namesbox').val(nameupdated);
+      // $('#result1').html("Removed");
+      // $('#result1').fadeOut(1000, function() {
+      //   $("div").remove("#result1");
+      // });
+      // $("div").remove(".name");
+      // $("div").remove(".extra");
+      // $('#headline').text('OK, done! Let\'s see who is next? Just click "GO!" button for next roll.');
     }
   </script>
 
